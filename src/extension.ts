@@ -12,7 +12,7 @@ const PINLINEDECORATION = vscode.window.createTextEditorDecorationType({
   gutterIconSize: "contain",
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 });
-const fileOf = (s: string) => s.split('\\')[s.split('\\').length-1];
+const fileOf = (s: string) => s.split("\\")[s.split("\\").length - 1];
 
 type WorkSpacePoints = Record<string, JumpPoint[]>;
 
@@ -46,6 +46,45 @@ const setWorkSpacePoints = (
   filename: string,
   value: JumpPoint[]
 ) => (getWorkSpacePoints(ctx)[filename] = value);
+
+function lineCountChange(e: vscode.TextDocumentChangeEvent): number {
+  // simple newline insertions are singleline changes
+  if (!e.contentChanges[0].range.isSingleLine) {
+    return e.contentChanges[0].range.start.line - e.contentChanges[0].range.end.line;
+  } else {
+    return (e.contentChanges[0].text.match("\n") || []).length;
+  }
+}
+
+function updateLineNumbers(
+  e: vscode.TextDocumentChangeEvent,
+  context: vscode.ExtensionContext
+): void {
+  const jps = getJumpPoints(context);
+  if (!jps) {
+    return;
+  }
+  var end = e.contentChanges[0].range.end.line;
+  const diff = lineCountChange(e);
+  console.log(diff);
+  if (diff !== 0) {
+    jps.forEach((e) => {
+      if (e.to.position.line >= end) {
+        e.to.position = e.to.position.with(e.to.position.line + diff);
+        e.label = JumpPoint.nameOf(e.to.position.line);
+      }
+    });
+    jps.forEach((e) => {
+      const index = jps.findIndex(
+        (z) => z.to.position.line === e.to.position.line && z !== e
+      );
+      if (index !== -1) {
+        jps.splice(index, 1);
+      }
+    });
+    vscode.commands.executeCommand("code-jumper.refreshJumpPoints");
+  }
+}
 
 /**
  * @param ctx Extension Context
@@ -205,14 +244,20 @@ class CommandsProvider {
   async jumpTo(pt?: Designation): Promise<void> {
     console.log("[JumpTo] Calculating position.");
     if (pt === undefined) {
-      var jps: JumpPoint[] = Object.values(getWorkSpacePoints(this.ctx)).reduce((p, c) => p.concat(c));
+      var jps: JumpPoint[] = Object.values(getWorkSpacePoints(this.ctx)).reduce(
+        (p, c) => p.concat(c)
+      );
       // get all the jump points existent
       if (!jps) {
         vscode.window.showWarningMessage("There is no where to jump to.");
         return;
       }
-      const choice = await vscode.window.showQuickPick(jps.map((e) => `$(bookmark) ${fileOf(e.to.filename)} ${e.name}`));
-      pt = jps.find((e) => `$(bookmark) ${fileOf(e.to.filename)} ${e.name}` === choice)?.to;
+      const choice = await vscode.window.showQuickPick(
+        jps.map((e) => `$(bookmark) ${fileOf(e.to.filename)} ${e.name}`)
+      );
+      pt = jps.find(
+        (e) => `$(bookmark) ${fileOf(e.to.filename)} ${e.name}` === choice
+      )?.to;
       if (pt === undefined) {
         vscode.window.showErrorMessage("Could not find the point chosen!");
         return;
@@ -220,7 +265,7 @@ class CommandsProvider {
         var point = pt;
       }
     } else {
-    var point = pt;
+      var point = pt;
     }
     const targetDocument = vscode.workspace.textDocuments.filter(
       (te: vscode.TextDocument) => te.fileName === point.filename
@@ -295,7 +340,7 @@ class Designation {
   constructor(
     public readonly filename: string,
     public readonly languageId: string,
-    public readonly position: vscode.Position
+    public position: vscode.Position
   ) {
     this.filename = filename;
     this.languageId = languageId;
@@ -315,8 +360,8 @@ class FileState extends vscode.TreeItem {
 
 class JumpPoint extends vscode.TreeItem {
   constructor(public readonly to: Designation, public readonly name?: string) {
-    super(`LN ${to.position.line + 1}`);
-    this.name = `LN ${to.position.line + 1}`;
+    super(JumpPoint.nameOf(to.position.line));
+    this.name = JumpPoint.nameOf(to.position.line);
     this.to = to;
     this.command = {
       title: "Jump To",
@@ -326,6 +371,10 @@ class JumpPoint extends vscode.TreeItem {
     };
     this.iconPath = PUSHPINPATH;
     this.contextValue = "JumpPoint";
+  }
+
+  static nameOf(line: number): string {
+    return `LN ${line + 1}`;
   }
 }
 
@@ -338,11 +387,9 @@ export function activate(context: vscode.ExtensionContext) {
   const treeProvider = new JumpviewProvider(context);
   const cmdProvider = new CommandsProvider(context);
 
-  const updateTrigger = () => {
-    if (vscode.window.activeTextEditor) {
-      updateDecorations(context);
-      pickupOutJumpPoints(context);
-    }
+  const updateTrigger = (e: vscode.TextDocumentChangeEvent) => {
+    updateLineNumbers(e, context);
+    pickupOutJumpPoints(context);
   };
   context.subscriptions.push(
     vscode.commands.registerCommand("code-jumper.newJumpPoint", () =>
@@ -361,7 +408,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   vscode.window.onDidChangeActiveTextEditor(
-    updateTrigger,
+    () => updateDecorations(context),
     null,
     context.subscriptions
   );

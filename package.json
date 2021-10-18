@@ -1,9 +1,11 @@
 {
   "name": "code-jumper",
   "displayName": "Code Jumper",
-  "description": "Code Jumper is a simple tool to setup markers in source code to restore focus on demand.",
+  "publisher": "Rickaym",
+  "description": "A simple tool to set up markers in source code to restore focus on demand and other utility navigation addons.",
   "version": "0.0.1",
-  "icon": "./assets/jumping-rope.png",
+  "repository": {"url": "https://github.com/Rickaym/Code-Jumper"},
+  "icon": "assets/jumping-rope.png",
   "engines": {
     "vscode": "^1.61.0"
   },
