@@ -53,12 +53,12 @@
     "keybindings": [
       {
         "command": "code-jumper.newJumpPoint",
-        "key": "ctrl+k",
+        "key": "ctrl+l",
         "when": "editorTextFocus"
       },
       {
         "command": "code-jumper.deleteJumpPoint",
-        "key": "ctrl+l",
+        "key": "ctrl+'",
         "when": "editorTextFocus"
       }
     ],

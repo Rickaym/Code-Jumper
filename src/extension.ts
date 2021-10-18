@@ -12,6 +12,7 @@ const PINLINEDECORATION = vscode.window.createTextEditorDecorationType({
   gutterIconSize: "contain",
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 });
+const fileOf = (s: string) => s.split('\\')[s.split('\\').length-1];
 
 type WorkSpacePoints = Record<string, JumpPoint[]>;
 
@@ -210,8 +211,8 @@ class CommandsProvider {
         vscode.window.showWarningMessage("There is no where to jump to.");
         return;
       }
-      const choice = await vscode.window.showQuickPick(jps.map((e) => `$(bookmark) ${e.to.filename} ${e.name}`));
-      pt = jps.find((e) => `$(bookmark) ${e.to.filename} ${e.name}` === choice)?.to;
+      const choice = await vscode.window.showQuickPick(jps.map((e) => `$(bookmark) ${fileOf(e.to.filename)} ${e.name}`));
+      pt = jps.find((e) => `$(bookmark) ${fileOf(e.to.filename)} ${e.name}` === choice)?.to;
       if (pt === undefined) {
         vscode.window.showErrorMessage("Could not find the point chosen!");
         return;
@@ -304,7 +305,7 @@ class Designation {
 
 class FileState extends vscode.TreeItem {
   constructor(public readonly filename: string) {
-    super(filename);
+    super(fileOf(filename));
     this.filename = filename;
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     this.iconPath = FOLDERPATH;
@@ -313,7 +314,7 @@ class FileState extends vscode.TreeItem {
 }
 
 class JumpPoint extends vscode.TreeItem {
-  constructor(public readonly to: Designation, public readonly name: string) {
+  constructor(public readonly to: Designation, public readonly name?: string) {
     super(`LN ${to.position.line + 1}`);
     this.name = `LN ${to.position.line + 1}`;
     this.to = to;
