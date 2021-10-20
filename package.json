@@ -3,8 +3,11 @@
   "displayName": "Code Jumper",
   "publisher": "Rickaym",
   "description": "A simple tool to set up markers in source code to restore focus on demand and other utility navigation addons.",
-  "version": "0.0.1",
-  "repository": {"url": "https://github.com/Rickaym/Code-Jumper"},
+  "version": "0.0.3",
+  "keywords": ["goto", "code jumper", "codejumper", "navigation", "cursor"],
+  "repository": {
+    "url": "https://github.com/Rickaym/Code-Jumper"
+  },
   "icon": "assets/jumping-rope.png",
   "engines": {
     "vscode": "^1.61.0"
@@ -17,19 +20,36 @@
     "onCommand:code-jumper.deleteJumpPoint",
     "onCommand:code-jumper.jumpTo",
     "onCommand:code-jumper.refreshJumpPoints",
+    "onCommand:code-jumper.bindJumpPoint",
+    "onCommand:code-jumper.cursorUndo",
     "onView:jumpview"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Code Jumper",
+      "properties": {
+        "code-jumper.quickJumpKeyChord": {
+          "type": "string",
+          "scope": "application",
+          "default": "ctrl+l",
+          "description": "The starting keybind used in jumping to designations quickly. Note, this is not expected to work in the release.."
+        }
+      }
+    },
     "commands": [
       {
         "command": "code-jumper.newJumpPoint",
         "title": "New JumpPoint"
       },
       {
-      "command": "code-jumper.deleteJumpPoint",
-      "title": "Delete JumpPoint"
-    },
+        "command": "code-jumper.deleteJumpPoint",
+        "title": "Delete JumpPoint"
+      },
+      {
+        "command": "code-jumper.bindJumpPoint",
+        "title": "Bind JumpPoint"
+      },
       {
         "command": "code-jumper.jumpTo",
         "title": "Jump To"
@@ -38,8 +58,8 @@
         "command": "code-jumper.refreshJumpPoints",
         "title": "Refresh JumpPoints",
         "icon": {
-            "light": "resources/light/refresh.svg",
-            "dark": "resources/dark/refresh.svg"
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
         }
       }
     ],
@@ -55,23 +75,157 @@
     "keybindings": [
       {
         "command": "code-jumper.newJumpPoint",
-        "key": "ctrl+l",
+        "key": "ctrl+shift+l",
         "when": "editorTextFocus"
       },
       {
-        "command": "code-jumper.deleteJumpPoint",
-        "key": "ctrl+'",
+        "command": "code-jumper.bindJumpPoint",
+        "key": "ctrl+alt+l",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l a",
+        "args": "a"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l b",
+        "args": "b"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l c",
+        "args": "c"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l d",
+        "args": "d"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l e",
+        "args": "e"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l f",
+        "args": "f"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l g",
+        "args": "g"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l h",
+        "args": "h"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l i",
+        "args": "i"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l j",
+        "args": "j"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l k",
+        "args": "k"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l l",
+        "args": "l"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l m",
+        "args": "m"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l n",
+        "args": "n"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l o",
+        "args": "o"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l p",
+        "args": "p"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l q",
+        "args": "q"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l r",
+        "args": "r"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l s",
+        "args": "s"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l t",
+        "args": "t"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l u",
+        "args": "u"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l v",
+        "args": "v"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l w",
+        "args": "w"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l x",
+        "args": "x"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l y",
+        "args": "y"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l z",
+        "args": "z"
       }
     ],
     "menus": {
       "view/item/context": [
-          {
-              "command": "code-jumper.deleteJumpPoint",
-              "when": "viewItem == JumpPoint"
-          }
+        {
+          "command": "code-jumper.deleteJumpPoint",
+          "when": "viewItem == JumpPoint"
+        },
+        {
+          "command": "code-jumper.bindJumpPoint",
+          "when": "viewItem == JumpPoint"
+        }
       ]
-  }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

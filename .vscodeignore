@@ -3,7 +3,7 @@
 src/**
 .gitignore
 .yarnrc
-vsc-extension-quickstart.md
+bindings.py
 **/tsconfig.json
 **/.eslintrc.json
 **/*.map

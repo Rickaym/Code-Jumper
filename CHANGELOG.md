@@ -7,3 +7,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [Unreleased]
 
 - Initial release
+
+## [0.0.2]
+
+- Puppet readme.md change release
+
+## [0.0.3]
+
+- Added Quick Jump Keybinds
+- Fixed problem with filenames
