@@ -3,7 +3,7 @@
   "displayName": "Code Jumper",
   "publisher": "Rickaym",
   "description": "A simple tool to set up markers in source code to restore focus on demand and other utility navigation addons.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "keywords": [
     "goto",
     "code jumper",

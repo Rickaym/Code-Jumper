@@ -101,7 +101,5 @@ export function setup(ctx: vscode.ExtensionContext) {
   );
 }
 
-
 export function deactivate() {
-
 }

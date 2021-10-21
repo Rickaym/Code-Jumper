@@ -16,3 +16,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Added Quick Jump Keybinds
 - Fixed problem with filenames
+
+## [0.0.4]
+
+- Quick Jump Keybind limitations and better toolset
+- Uses Theme Icons

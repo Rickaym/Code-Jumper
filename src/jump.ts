@@ -3,27 +3,31 @@ import * as path from "path";
 import * as fs from "fs";
 
 const packageJson = require("../package.json");
-const QUICKJUMPKEYBIND = packageJson.contributes.keybindings
-  .find((e: any) => e.command === "code-jumper.jumpTo")
-  ?.key.split(" ")[0];
 const BINDABLES: string[] = require("../bindables.json")["keys"].split(",");
-
-/**
- * Collaspable by file jump points
- */
 const JUMPPOINT_ID = "jumppoints";
 const PUSHPINPATH = path.join(__filename, "..", "..", "assets", "pushpin.png");
+type WorkSpacePoints = Record<string, JumpPoint[]>;
+
 const PINLINEDECORATION = vscode.window.createTextEditorDecorationType({
   gutterIconPath: PUSHPINPATH,
   gutterIconSize: "contain",
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 });
-const fileOf = (s: string) =>
-  s.replace("/", "\\").split("\\")[s.split("\\").length - 1];
+
+const QUICKJUMPKEYBIND = packageJson.contributes.keybindings
+  .find((e: any) => e.command === "code-jumper.jumpTo")
+  ?.key.split(" ")[0];
+
+/**
+ * Derives the filename with an extension from a file URI.
+ *
+ * @param path
+ * @returns Filename with the extension
+ */
+const fileOf = (path: string) =>
+  path.replace("/", "\\").split("\\")[path.split("\\").length - 1];
 
 const getCursorPosition = (e: vscode.TextEditor) => e.selection.active;
-
-type WorkSpacePoints = Record<string, JumpPoint[]>;
 
 /**
  * @return The active editor for the window.
@@ -39,6 +43,7 @@ function getEditor(): vscode.TextEditor {
 }
 
 /**
+ * @param ctx Extension Context
  * @return A dictionary of `filename`: `JumpPoint[]`
  */
 function getWorkSpacePoints(ctx: vscode.ExtensionContext): WorkSpacePoints {
@@ -224,10 +229,11 @@ class CommandsProvider {
       getCursorPosition(editor)
     );
     let jps = getJumpPoints(this.ctx);
-    if (!jps) {
+    if (jps === undefined) {
       jps = [];
       setWorkSpacePoints(this.ctx, document.fileName, jps);
-    } else if (jps.find((jp) => jp.to.position.line === item.position.line)) {
+    }
+    if (jps.find((jp) => jp.to.position.line === item.position.line)) {
       vscode.commands.executeCommand("code-jumper.deleteJumpPoint");
     } else {
       const newJp = new JumpPoint(item);
@@ -306,6 +312,7 @@ class CommandsProvider {
     }
     point.keybind = keybind;
     point.label = JumpPoint.nameOf(point.to.position.line, point.keybind);
+    point.tooltip = point.getKeySequence();
     vscode.commands.executeCommand("code-jumper.refreshJumpPoints");
   }
 
@@ -522,8 +529,9 @@ export function setup(ctx: vscode.ExtensionContext) {
     null,
     ctx.subscriptions
   );
+
   /*
-    BETA
+  BETA
 
   vscode.workspace.onDidChangeConfiguration(
     (e: vscode.ConfigurationChangeEvent) => {
@@ -531,7 +539,8 @@ export function setup(ctx: vscode.ExtensionContext) {
         changeQuickJumpKeyChord();
       }
     }
-  );*/
+  );
+  */
   vscode.workspace.onDidCloseTextDocument(
     () => pickupFileStates(getWorkSpacePoints(ctx)),
     null,
