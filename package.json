@@ -4,7 +4,13 @@
   "publisher": "Rickaym",
   "description": "A simple tool to set up markers in source code to restore focus on demand and other utility navigation addons.",
   "version": "0.0.3",
-  "keywords": ["goto", "code jumper", "codejumper", "navigation", "cursor"],
+  "keywords": [
+    "goto",
+    "code jumper",
+    "codejumper",
+    "navigation",
+    "cursor"
+  ],
   "repository": {
     "url": "https://github.com/Rickaym/Code-Jumper"
   },
@@ -85,6 +91,26 @@
       },
       {
         "command": "code-jumper.jumpTo",
+        "key": "ctrl+l $",
+        "args": "$"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l 6",
+        "args": "6"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l <",
+        "args": "<"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l  ",
+        "args": " "
+      },
+      {
+        "command": "code-jumper.jumpTo",
         "key": "ctrl+l a",
         "args": "a"
       },
@@ -95,63 +121,8 @@
       },
       {
         "command": "code-jumper.jumpTo",
-        "key": "ctrl+l c",
-        "args": "c"
-      },
-      {
-        "command": "code-jumper.jumpTo",
-        "key": "ctrl+l d",
-        "args": "d"
-      },
-      {
-        "command": "code-jumper.jumpTo",
-        "key": "ctrl+l e",
-        "args": "e"
-      },
-      {
-        "command": "code-jumper.jumpTo",
-        "key": "ctrl+l f",
-        "args": "f"
-      },
-      {
-        "command": "code-jumper.jumpTo",
-        "key": "ctrl+l g",
-        "args": "g"
-      },
-      {
-        "command": "code-jumper.jumpTo",
-        "key": "ctrl+l h",
-        "args": "h"
-      },
-      {
-        "command": "code-jumper.jumpTo",
-        "key": "ctrl+l i",
-        "args": "i"
-      },
-      {
-        "command": "code-jumper.jumpTo",
-        "key": "ctrl+l j",
-        "args": "j"
-      },
-      {
-        "command": "code-jumper.jumpTo",
-        "key": "ctrl+l k",
-        "args": "k"
-      },
-      {
-        "command": "code-jumper.jumpTo",
-        "key": "ctrl+l l",
-        "args": "l"
-      },
-      {
-        "command": "code-jumper.jumpTo",
-        "key": "ctrl+l m",
-        "args": "m"
-      },
-      {
-        "command": "code-jumper.jumpTo",
-        "key": "ctrl+l n",
-        "args": "n"
+        "key": "ctrl+l 1",
+        "args": "1"
       },
       {
         "command": "code-jumper.jumpTo",
@@ -160,8 +131,13 @@
       },
       {
         "command": "code-jumper.jumpTo",
-        "key": "ctrl+l p",
-        "args": "p"
+        "key": "ctrl+l y",
+        "args": "y"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l ;",
+        "args": ";"
       },
       {
         "command": "code-jumper.jumpTo",
@@ -170,8 +146,48 @@
       },
       {
         "command": "code-jumper.jumpTo",
+        "key": "ctrl+l 3",
+        "args": "3"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l 5",
+        "args": "5"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l c",
+        "args": "c"
+      },
+      {
+        "command": "code-jumper.jumpTo",
         "key": "ctrl+l r",
         "args": "r"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l 9",
+        "args": "9"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l =",
+        "args": "="
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l ]",
+        "args": "]"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l i",
+        "args": "i"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l l",
+        "args": "l"
       },
       {
         "command": "code-jumper.jumpTo",
@@ -180,8 +196,63 @@
       },
       {
         "command": "code-jumper.jumpTo",
-        "key": "ctrl+l t",
-        "args": "t"
+        "key": "ctrl+l x",
+        "args": "x"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l h",
+        "args": "h"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l .",
+        "args": "."
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l 0",
+        "args": "0"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l k",
+        "args": "k"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l +",
+        "args": "+"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l \"",
+        "args": "\""
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l j",
+        "args": "j"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l :",
+        "args": ":"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l ?",
+        "args": "?"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l `",
+        "args": "`"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l 7",
+        "args": "7"
       },
       {
         "command": "code-jumper.jumpTo",
@@ -190,8 +261,38 @@
       },
       {
         "command": "code-jumper.jumpTo",
-        "key": "ctrl+l v",
-        "args": "v"
+        "key": "ctrl+l {",
+        "args": "{"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l }",
+        "args": "}"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l 2",
+        "args": "2"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l \\",
+        "args": "\\"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l z",
+        "args": "z"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l m",
+        "args": "m"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l (",
+        "args": "("
       },
       {
         "command": "code-jumper.jumpTo",
@@ -200,18 +301,148 @@
       },
       {
         "command": "code-jumper.jumpTo",
-        "key": "ctrl+l x",
-        "args": "x"
+        "key": "ctrl+l _",
+        "args": "_"
       },
       {
         "command": "code-jumper.jumpTo",
-        "key": "ctrl+l y",
-        "args": "y"
+        "key": "ctrl+l @",
+        "args": "@"
       },
       {
         "command": "code-jumper.jumpTo",
-        "key": "ctrl+l z",
-        "args": "z"
+        "key": "ctrl+l g",
+        "args": "g"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l !",
+        "args": "!"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l %",
+        "args": "%"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l Tab",
+        "args": "Tab"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l |",
+        "args": "|"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l f",
+        "args": "f"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l &",
+        "args": "&"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l ,",
+        "args": ","
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l #",
+        "args": "#"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l [",
+        "args": "["
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l n",
+        "args": "n"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l ~",
+        "args": "~"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l )",
+        "args": ")"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l Enter",
+        "args": "Enter"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l d",
+        "args": "d"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l '",
+        "args": "'"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l p",
+        "args": "p"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l *",
+        "args": "*"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l /",
+        "args": "/"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l >",
+        "args": ">"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l v",
+        "args": "v"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l 4",
+        "args": "4"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l -",
+        "args": "-"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l t",
+        "args": "t"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l ^",
+        "args": "^"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l e",
+        "args": "e"
+      },
+      {
+        "command": "code-jumper.jumpTo",
+        "key": "ctrl+l 8",
+        "args": "8"
       }
     ],
     "menus": {

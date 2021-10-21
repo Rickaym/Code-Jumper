@@ -6,13 +6,13 @@ const packageJson = require("../package.json");
 const QUICKJUMPKEYBIND = packageJson.contributes.keybindings
   .find((e: any) => e.command === "code-jumper.jumpTo")
   ?.key.split(" ")[0];
+const BINDABLES: string[] = require("../bindables.json")["keys"].split(",");
 
 /**
  * Collaspable by file jump points
  */
 const JUMPPOINT_ID = "jumppoints";
 const PUSHPINPATH = path.join(__filename, "..", "..", "assets", "pushpin.png");
-const FOLDERPATH = path.join(__filename, "..", "..", "assets", "contract.png");
 const PINLINEDECORATION = vscode.window.createTextEditorDecorationType({
   gutterIconPath: PUSHPINPATH,
   gutterIconSize: "contain",
@@ -295,7 +295,13 @@ class CommandsProvider {
       placeHolder: "a, b, c..",
       prompt: `The hotkey must be pressed after pressing the setup keybind. If you saved "a", the keystrokes will follow "${QUICKJUMPKEYBIND} a", make sure to release and press.`,
     });
-    if (typeof keybind !== "string") {
+    if (keybind === undefined) {
+      return;
+    } else if (!BINDABLES.find((e) => e === keybind)) {
+      vscode.window.showErrorMessage(
+        `${keybind} is an unpermitted keybind. Due to vscode limitations quick-jump keybinds must be acknowledged by the extension before creation. You can suggest additions in the support server.`
+      );
+      vscode.commands.executeCommand("code-jumper.bindJumpPoint");
       return;
     }
     point.keybind = keybind;
@@ -305,6 +311,8 @@ class CommandsProvider {
 
   async jumpTo(pt?: Designation | string): Promise<void> {
     console.log("[JumpTo] Calculating position.");
+
+    var point: Designation;
     if (pt === undefined) {
       const wsp: WorkSpacePoints =
         this.ctx.workspaceState.get(JUMPPOINT_ID) || {};
@@ -320,30 +328,48 @@ class CommandsProvider {
         return;
       }
       const choice = await vscode.window.showQuickPick(
-        jps.map((e) => `$(bookmark) ${fileOf(e.to.filename)} ${e.name}`)
+        jps.map((e) => `$(file) ${fileOf(e.to.filename)} ${e.name}`)
       );
       pt = jps.find(
-        (e) => `$(bookmark) ${fileOf(e.to.filename)} ${e.name}` === choice
+        (e) => `$(file) ${fileOf(e.to.filename)} ${e.name}` === choice
       )?.to;
       if (pt === undefined) {
         return;
       } else {
-        var point = pt;
+        point = pt;
       }
     } else if (typeof pt === "string") {
       // find the jump point target in the workspace rather than an editor
       const wsp: WorkSpacePoints =
         this.ctx.workspaceState.get(JUMPPOINT_ID) || {};
+      const wspVals = Object.values(wsp);
+      if (wspVals.length < 1) {
+        return;
+      }
       var allJps = Object.values(wsp).reduce((p, c) => p.concat(c));
-      const jp = allJps.find((e) => e.keybind === pt);
-      if (!jp) {
+      const jps = allJps.filter((e) => e.keybind === pt);
+      if (jps.length < 1) {
         return;
       } else {
-        var point = jp.to;
+        point = jps[0].to;
+
+        // if we have a cursor on location, we'll approach the nearest jump point
+        // with the matching keybind
+        if (vscode.window.activeTextEditor) {
+          let curpos = vscode.window.activeTextEditor.selection.active.line;
+          let closest = 10000000000;
+          jps.forEach((e) => {
+            if (Math.abs(curpos - e.to.position.line) < closest) {
+              point = e.to;
+              closest = Math.abs(curpos - e.to.position.line);
+            }
+          });
+        }
       }
     } else {
-      var point = pt;
+      point = pt;
     }
+
     const targetDocument = vscode.workspace.textDocuments.filter(
       (te: vscode.TextDocument) => te.fileName === point.filename
     )[0];
@@ -355,7 +381,7 @@ class CommandsProvider {
       editor = await vscode.window.showTextDocument(targetDocument);
       console.log(
         "[JumpTo] Switched focus to " +
-          targetDocument.fileName +
+          fileOf(targetDocument.fileName) +
           " after inactivity."
       );
     } else {
@@ -363,9 +389,9 @@ class CommandsProvider {
     }
 
     const cursorPos = editor.selection.active.with(point.position.line);
+    editor.revealRange(new vscode.Range(cursorPos, cursorPos), 1);
     if (editor.selection.active.line !== point.position.line) {
       editor.selection = new vscode.Selection(cursorPos, cursorPos);
-      editor.revealRange(new vscode.Range(cursorPos, cursorPos), 1);
       console.log("[JumpTo] Repositioned cursor to " + cursorPos.line + "..");
     }
   }
@@ -430,8 +456,9 @@ class FileState extends vscode.TreeItem {
     super(fileOf(filename));
     this.filename = filename;
     this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-    this.iconPath = FOLDERPATH;
+    this.iconPath = vscode.ThemeIcon.File;
     this.contextValue = "FileState";
+    this.resourceUri = vscode.Uri.file(this.filename);
   }
 }
 
@@ -445,6 +472,7 @@ class JumpPoint extends vscode.TreeItem {
       tooltip: "Jumps to a designation",
       arguments: [this.to],
     };
+    this.tooltip = this.getKeySequence();
     this.iconPath = PUSHPINPATH;
     this.contextValue = "JumpPoint";
   }
@@ -452,8 +480,12 @@ class JumpPoint extends vscode.TreeItem {
   keybind: undefined | string = undefined;
   name: string = JumpPoint.nameOf(this.to.position.line, this.keybind);
 
+  getKeySequence(): string {
+    return this.keybind ? `CTRL + L ${this.keybind}` : "Press To Jump";
+  }
+
   static nameOf(line: number, keybind: string | undefined): string {
-    return `LN ${line + 1} ${keybind ? `: ${keybind.toUpperCase()}` : " "}`;
+    return `LN ${line + 1}${keybind ? `: ${keybind.toUpperCase()}` : " "}`;
   }
 }
 
