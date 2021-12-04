@@ -5,5 +5,4 @@ export function activate(context: vscode.ExtensionContext) {
   jump.setup(context);
 }
 
-export function deactivate() {
-}
+export function deactivate() {}
