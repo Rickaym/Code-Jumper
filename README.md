@@ -1,12 +1,12 @@
 # Code Jumper
 
+<a href="https://marketplace.visualstudio.com/items?itemName=Rickaym.code-jumper">
+<img alt="Extension Homepage" src="https://img.shields.io/badge/vscode-install%20Here-purple?logo=visualstudiocode"></a>
+<a href="https://marketplace.visualstudio.com/items?itemName=Rickaym.code-jumper"><img alt="Extension Version" src="https://img.shields.io/visual-studio-marketplace/v/Rickaym.code-jumper"></a>
+<a href="https://discord.gg/UmnzdPgn6g">
+<img src="https://img.shields.io/discord/793047973751554088?logo=discord" alt="Get Support"></a>
+
 Code Jumper is a simple tool to set up markers in source code to restore focus on demand and other utility navigation addons. As with working on different class files for **Java**, header and source files for **C++**, different modules in **Python** navigating through the dense nature of code bases can become overwhelming, tedious and repetitive very quickly. Often times there are cases where various snippets from different file locations are coupled in logic, Code Jumper will help get to pre-determined location in code that has manually been saved.
-
-------
-
-**[Support Server](https://discord.gg/UmnzdPgn6g)** | **[Issues](https://github.com/Rickaym/Code-Jumper/issues)** | **[Repository](https://github.com/Rickaym/Code-Jumper)** | **[Install here](https://marketplace.visualstudio.com/items?itemName=Rickaym.code-jumper)**
-
-------
 
 ## Features
 
