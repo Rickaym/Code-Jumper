@@ -100,10 +100,26 @@ Code-Jumper contributes the following settings:
 
 ~ None.
 
-## Release Notes
+## [0.0.2]
+
+- Puppet readme.md change release
+
+## [0.0.3]
 
 - Added Quick Jump Keybinds
 - Fixed problem with filenames
+
+## [0.0.4]
+
+- Quick Jump Keybind limitations and better toolset
+- Uses Theme Icons
+
+## [0.0.5]
+
+- Remove cursor support
+- Show line of code on hover
+- Document change jump-point reallocation fix
+- Combining changelog.md to readme.md
 
 ### Attributions and Credits
 

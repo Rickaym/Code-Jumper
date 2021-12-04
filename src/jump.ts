@@ -1,19 +1,20 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
+import { cpuUsage } from "process";
 
-const packageJson = require("../package.json");
-const BINDABLES: string[] = require("../bindables.json")["keys"].split(",");
-const JUMPPOINT_ID = "jumppoints";
-const PUSHPINPATH = path.join(__filename, "..", "..", "assets", "pushpin.png");
 type WorkSpacePoints = Record<string, JumpPoint[]>;
 
+const JUMPPOINT_ID = "jumppoints";
+
+const BINDABLES: string[] = require("../bindables.json")["keys"].split(",");
+const packageJson = require("../package.json");
+const PUSHPINPATH = path.join(__filename, "..", "..", "assets", "pushpin.png");
 const PINLINEDECORATION = vscode.window.createTextEditorDecorationType({
   gutterIconPath: PUSHPINPATH,
   gutterIconSize: "contain",
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 });
-
 const QUICKJUMPKEYBIND = packageJson.contributes.keybindings
   .find((e: any) => e.command === "code-jumper.jumpTo")
   ?.key.split(" ")[0];
@@ -24,10 +25,9 @@ const QUICKJUMPKEYBIND = packageJson.contributes.keybindings
  * @param path
  * @returns Filename with the extension
  */
-const fileOf = (path: string) =>
-  path.replace("/", "\\").split("\\")[path.split("\\").length - 1];
-
-const getCursorPosition = (e: vscode.TextEditor) => e.selection.active;
+function fileOf(path: string): string {
+  return path.replace("/", "\\").split("\\")[path.split("\\").length - 1];
+}
 
 /**
  * @return The active editor for the window.
@@ -35,7 +35,6 @@ const getCursorPosition = (e: vscode.TextEditor) => e.selection.active;
  */
 function getEditor(): vscode.TextEditor {
   if (!vscode.window.activeTextEditor) {
-    vscode.window.showWarningMessage("No active editors.");
     throw TypeError("Cannot proceed when the active text editor is undefined.");
   } else {
     return vscode.window.activeTextEditor;
@@ -55,20 +54,43 @@ function getWorkSpacePoints(ctx: vscode.ExtensionContext): WorkSpacePoints {
   return jp;
 }
 
-const setWorkSpacePoints = (
+function setWorkSpacePoints(
   ctx: vscode.ExtensionContext,
   filename: string,
   value: JumpPoint[]
-) => (getWorkSpacePoints(ctx)[filename] = value);
+) {
+  getWorkSpacePoints(ctx)[filename] = value;
+}
 
-function lineCountChange(e: vscode.TextDocumentChangeEvent): number {
-  // simple newline insertions are singleline changes
+function relativeLineChange(
+  relPos: Designation,
+  e: vscode.TextDocumentChangeEvent,
+): number {
+  const appendage = (e.
+    contentChanges[0].text.match(/\n/g) || []).length;
+
   if (!e.contentChanges[0].range.isSingleLine) {
-    return (
-      e.contentChanges[0].range.start.line - e.contentChanges[0].range.end.line
-    );
+    const outOfBounds =
+      e.contentChanges[0].range.end.line > relPos.position.line
+        ? e.contentChanges[0].range.end.line - relPos.position.line
+        : 0;
+    const change = e.contentChanges[0].range.start.line -
+    e.contentChanges[0].range.end.line;
+
+    // when an line change contains an appendage and some parts of it
+    // may be out of bounds we have to check what part of it must be
+    // removed and then return the valid new lines
+    const validNewLines =
+      outOfBounds && appendage
+        ? appendage >
+          relPos.position.line - e.contentChanges[0].range.start.line
+          ? relPos.position.line - e.contentChanges[0].range.start.line
+          : appendage
+        : appendage;
+
+    return change + outOfBounds + validNewLines;
   } else {
-    return (e.contentChanges[0].text.match("\n") || []).length;
+    return appendage;
   }
 }
 
@@ -80,26 +102,27 @@ function updateLineNumbers(
   if (!jps) {
     return;
   }
-  var end = e.contentChanges[0].range.end.line;
-  const diff = lineCountChange(e);
-  console.log(diff);
-  if (diff !== 0) {
-    jps.forEach((e) => {
-      if (e.to.position.line >= end) {
-        e.to.position = e.to.position.with(e.to.position.line + diff);
-        e.label = JumpPoint.nameOf(e.to.position.line, e.keybind);
-      }
-    });
-    jps.forEach((e) => {
-      const index = jps.findIndex(
-        (z) => z.to.position.line === e.to.position.line && z !== e
+  const start = e.contentChanges[0].range.start.line;
+  jps.forEach((jp) => {
+    if (jp.to.position.line >= start) {
+      const change = relativeLineChange(jp.to, e);
+      jp.to.position = jp.to.position.with(
+        jp.to.position.line + change
       );
-      if (index !== -1) {
-        jps.splice(index, 1);
-      }
-    });
-    vscode.commands.executeCommand("code-jumper.refreshJumpPoints");
-  }
+      jp.label = JumpPoint.nameOf(jp.to, jp.keybind);
+      jp.positionChanged();
+    }
+  });
+
+  jps.forEach((e) => {
+    const index = jps.findIndex(
+      (z) => z.to.position.line === e.to.position.line && z !== e
+    );
+    if (index !== -1) {
+      jps.splice(index, 1);
+    }
+  });
+  vscode.commands.executeCommand("code-jumper.refreshJumpPoints", true);
 }
 
 /**
@@ -168,6 +191,7 @@ function pickupOutJumpPoints(ctx: vscode.ExtensionContext): void {
   }
 }
 
+// beta
 function changeQuickJumpKeyChord() {
   const newKeyBind: string | undefined = vscode.workspace
     .getConfiguration("code-jumper")
@@ -196,8 +220,8 @@ function updateDecorations(ctx: vscode.ExtensionContext): void {
   const jps = getJumpPoints(ctx);
   const editor = getEditor();
 
-  // we want to avoid setting new decorations ONLY if the jump points are in which case
-  // definitive of having no jump points, empty array jump points signifies that there was
+  // we want to avoid setting new decorations ONLY if the jump points are undefined
+  // , empty array jump points signifies that there was
   // a recently deleted jump point thus still requiring us to reset decorations
   if (jps === undefined) {
     return;
@@ -207,7 +231,6 @@ function updateDecorations(ctx: vscode.ExtensionContext): void {
       jps.map(function (point: JumpPoint): vscode.DecorationOptions {
         return {
           range: new vscode.Range(point.to.position, point.to.position),
-          hoverMessage: "$(alert)",
         };
       })
     );
@@ -219,14 +242,14 @@ class CommandsProvider {
     this.ctx = ctx;
   }
 
-  newJumpPoint(): JumpPoint | undefined {
+  setJumpPoint(): JumpPoint | undefined {
     const editor = getEditor();
     const document = editor.document;
     console.log("[Register] Pushing a new jump point.");
     const item = new Designation(
-      document.fileName,
+      document,
       document.languageId,
-      getCursorPosition(editor)
+      editor.selection.active
     );
     let jps = getJumpPoints(this.ctx);
     if (jps === undefined) {
@@ -239,8 +262,7 @@ class CommandsProvider {
       const newJp = new JumpPoint(item);
       jps.push(newJp);
       console.log("[New JumpPoint] Registered, calling refresh now.");
-      vscode.commands.executeCommand("code-jumper.refreshJumpPoints");
-      updateDecorations(this.ctx);
+      vscode.commands.executeCommand("code-jumper.refreshJumpPoints", true);
       return newJp;
     }
   }
@@ -251,7 +273,7 @@ class CommandsProvider {
       ? position instanceof JumpPoint
         ? position.to.position
         : position
-      : getCursorPosition(editor);
+      : editor.selection.active;
     const jps = getJumpPoints(this.ctx);
     if (!jps) {
       vscode.window.showErrorMessage(`There are no jump points to delete.`);
@@ -268,24 +290,23 @@ class CommandsProvider {
     } else {
       jps.splice(index, 1);
     }
-    vscode.commands.executeCommand("code-jumper.refreshJumpPoints");
-    updateDecorations(this.ctx);
+    vscode.commands.executeCommand("code-jumper.refreshJumpPoints", true);
     pickupFileStates(getWorkSpacePoints(this.ctx));
   }
 
   async bindJumpPoint(jp?: JumpPoint): Promise<void> {
     const editor = getEditor();
+    var jps = getJumpPoints(this.ctx);
     if (!jp) {
-      var jps = getJumpPoints(this.ctx);
       if (jps === undefined) {
         jps = [];
         setWorkSpacePoints(this.ctx, editor.document.fileName, jps);
       }
       var point = jps.find(
-        (z) => z.to.position.line === getCursorPosition(editor).line
+        (z) => z.to.position.line === editor.selection.active.line
       );
       if (!point) {
-        point = this.newJumpPoint();
+        point = this.setJumpPoint();
         if (!point) {
           vscode.window.showErrorMessage(
             "Making a new jump point here failed!"
@@ -301,6 +322,7 @@ class CommandsProvider {
       placeHolder: "a, b, c..",
       prompt: `The hotkey must be pressed after pressing the setup keybind. If you saved "a", the keystrokes will follow "${QUICKJUMPKEYBIND} a", make sure to release and press.`,
     });
+
     if (keybind === undefined) {
       return;
     } else if (!BINDABLES.find((e) => e === keybind)) {
@@ -310,9 +332,13 @@ class CommandsProvider {
       vscode.commands.executeCommand("code-jumper.bindJumpPoint");
       return;
     }
+    // invalid the previously set keybind if this is a repeated
+    // setting
+    const repeated = jps?.find((j) => j.keybind === keybind);
+    if (repeated) {
+      repeated.keybind = undefined;
+    }
     point.keybind = keybind;
-    point.label = JumpPoint.nameOf(point.to.position.line, point.keybind);
-    point.tooltip = point.getKeySequence();
     vscode.commands.executeCommand("code-jumper.refreshJumpPoints");
   }
 
@@ -335,10 +361,10 @@ class CommandsProvider {
         return;
       }
       const choice = await vscode.window.showQuickPick(
-        jps.map((e) => `$(file) ${fileOf(e.to.filename)} ${e.name}`)
+        jps.map((e) => `$(file) ${fileOf(e.to.document.fileName)} ${e.label}`)
       );
       pt = jps.find(
-        (e) => `$(file) ${fileOf(e.to.filename)} ${e.name}` === choice
+        (e) => `$(file) ${fileOf(e.to.document.fileName)} ${e.label}` === choice
       )?.to;
       if (pt === undefined) {
         return;
@@ -378,7 +404,7 @@ class CommandsProvider {
     }
 
     const targetDocument = vscode.workspace.textDocuments.filter(
-      (te: vscode.TextDocument) => te.fileName === point.filename
+      (te: vscode.TextDocument) => te.fileName === point.document.fileName
     )[0];
     let editor = vscode.window.activeTextEditor;
     if (
@@ -410,6 +436,7 @@ class JumpviewProvider
   constructor(private readonly context: vscode.ExtensionContext) {
     this.context = context;
   }
+
   getTreeItem(element: JumpPoint): vscode.TreeItem {
     return element;
   }
@@ -441,18 +468,20 @@ class JumpviewProvider
     JumpPoint | undefined | null | void
   > = this._onDidChangeTreeData.event;
 
-  refresh(): void {
+  refresh(updateDecor: boolean=false): void {
     this._onDidChangeTreeData.fire();
-  }
+    if (updateDecor) {
+    updateDecorations(this.context);
+  }}
 }
 
 class Designation {
   constructor(
-    public readonly filename: string,
+    public readonly document: vscode.TextDocument,
     public readonly languageId: string,
     public position: vscode.Position
   ) {
-    this.filename = filename;
+    this.document = document;
     this.languageId = languageId;
     this.position = position;
   }
@@ -471,7 +500,7 @@ class FileState extends vscode.TreeItem {
 
 class JumpPoint extends vscode.TreeItem {
   constructor(public readonly to: Designation) {
-    super(JumpPoint.nameOf(to.position.line, undefined));
+    super(JumpPoint.nameOf(to, undefined));
     this.to = to;
     this.command = {
       title: "Jump To",
@@ -479,20 +508,38 @@ class JumpPoint extends vscode.TreeItem {
       tooltip: "Jumps to a designation",
       arguments: [this.to],
     };
-    this.tooltip = this.getKeySequence();
+    this.positionChanged();
     this.iconPath = PUSHPINPATH;
     this.contextValue = "JumpPoint";
   }
 
-  keybind: undefined | string = undefined;
-  name: string = JumpPoint.nameOf(this.to.position.line, this.keybind);
+  private _keybind: undefined | string = undefined;
 
-  getKeySequence(): string {
-    return this.keybind ? `CTRL + L ${this.keybind}` : "Press To Jump";
+  public get keybind() {
+    return this._keybind;
   }
 
-  static nameOf(line: number, keybind: string | undefined): string {
-    return `LN ${line + 1}${keybind ? `: ${keybind.toUpperCase()}` : " "}`;
+  public set keybind(kb: string | undefined) {
+    this._keybind = kb;
+    this.label = JumpPoint.nameOf(this.to, this._keybind);
+  }
+
+  positionChanged() {
+    this.tooltip = new vscode.MarkdownString();
+    this.tooltip.appendCodeblock(
+      this.to.document.lineAt(this.to.position.line).text.trim() || this.getKeySequence(),
+      this.to.document.languageId
+    );
+  }
+
+  getKeySequence(): string {
+    return this._keybind ? `CTRL + L ${this._keybind}` : "Press To Jump";
+  }
+
+  static nameOf(to: Designation, keybind: string | undefined): string {
+    return `LN ${to.position.line + 1}${
+      keybind ? `: ${keybind.toUpperCase()}` : " "
+    }`;
   }
 }
 
@@ -503,20 +550,20 @@ export function setup(ctx: vscode.ExtensionContext) {
   const cmdProvider = new CommandsProvider(ctx);
 
   ctx.subscriptions.push(
-    vscode.commands.registerCommand("code-jumper.newJumpPoint", () =>
-      cmdProvider.newJumpPoint()
+    vscode.commands.registerCommand("code-jumper.setJumpPoint", () =>
+      cmdProvider.setJumpPoint()
     ),
-    vscode.commands.registerCommand("code-jumper.deleteJumpPoint", (...e) =>
-      cmdProvider.deleteJumpPoint(...e)
+    vscode.commands.registerCommand("code-jumper.deleteJumpPoint", (...args) =>
+      cmdProvider.deleteJumpPoint(...args)
     ),
-    vscode.commands.registerCommand("code-jumper.bindJumpPoint", (...e) =>
-      cmdProvider.bindJumpPoint(...e)
+    vscode.commands.registerCommand("code-jumper.bindJumpPoint", (...args) =>
+      cmdProvider.bindJumpPoint(...args)
     ),
-    vscode.commands.registerCommand("code-jumper.refreshJumpPoints", () =>
-      treeProvider.refresh()
+    vscode.commands.registerCommand("code-jumper.refreshJumpPoints", (...args) =>
+      treeProvider.refresh(...args)
     ),
-    vscode.commands.registerCommand("code-jumper.jumpTo", (...e) =>
-      cmdProvider.jumpTo(...e)
+    vscode.commands.registerCommand("code-jumper.jumpTo", (...args) =>
+      cmdProvider.jumpTo(...args)
     ),
     vscode.window.registerTreeDataProvider("jumpview", treeProvider)
   );
@@ -530,17 +577,6 @@ export function setup(ctx: vscode.ExtensionContext) {
     ctx.subscriptions
   );
 
-  /*
-  BETA
-
-  vscode.workspace.onDidChangeConfiguration(
-    (e: vscode.ConfigurationChangeEvent) => {
-      if (e.affectsConfiguration("code-jumper.quickJumpKeyChord")) {
-        changeQuickJumpKeyChord();
-      }
-    }
-  );
-  */
   vscode.workspace.onDidCloseTextDocument(
     () => pickupFileStates(getWorkSpacePoints(ctx)),
     null,
@@ -555,5 +591,3 @@ export function setup(ctx: vscode.ExtensionContext) {
     ctx.subscriptions
   );
 }
-
-export function deactivate() {}

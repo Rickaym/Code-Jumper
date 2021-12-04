@@ -22,12 +22,11 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:code-jumper.newJumpPoint",
+    "onCommand:code-jumper.setJumpPoint",
     "onCommand:code-jumper.deleteJumpPoint",
     "onCommand:code-jumper.jumpTo",
     "onCommand:code-jumper.refreshJumpPoints",
     "onCommand:code-jumper.bindJumpPoint",
-    "onCommand:code-jumper.cursorUndo",
     "onView:jumpview"
   ],
   "main": "./out/extension.js",
@@ -45,7 +44,7 @@
     },
     "commands": [
       {
-        "command": "code-jumper.newJumpPoint",
+        "command": "code-jumper.setJumpPoint",
         "title": "New JumpPoint"
       },
       {
@@ -80,7 +79,7 @@
     },
     "keybindings": [
       {
-        "command": "code-jumper.newJumpPoint",
+        "command": "code-jumper.setJumpPoint",
         "key": "ctrl+shift+l",
         "when": "editorTextFocus"
       },
